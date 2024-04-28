@@ -1,0 +1,57 @@
+version: "3.5"
+
+services:
+  mongo.db:
+    image: mongo:latest
+    container_name: mongo_db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: yolomy
+    ports:
+      - "27017:27017"
+    networks:
+      - yolo_net
+    volumes:
+      - type: volume
+        source: mongo_data
+        target: /data/db
+      - type: volume
+        source: mongo_data
+        target: /data/configdb
+    healthcheck:
+      test:
+        - CMD
+        - mongo
+        - --eval
+        - 'db.adminCommand("ping")'
+        - '--quiet'
+      retries: 3
+      timeout: 5s
+
+  mongo.express:
+    image: mongo-express:latest
+    container_name: mongo_express
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
+      ME_CONFIG_MONGODB_URL:  mongodb://mongo.db:27017/yolomy
+    ports:
+      - "8081:8081"
+    networks:
+      - yolo_net
+    depends_on:
+      - mongo.db
+
+networks:
+  yolo_net:
+    driver: bridge
+    name: yolo_net
+
+volumes:
+  mongo_data:
+    name: mongo_data
+    driver: local 
+  mongo_config:
+    name: mongo_config
+    driver: local
