@@ -2,9 +2,7 @@ version: "3.5"
 
 services:
   yolo.app:
-        build:
-          context: .
-          dockerfile: Dockerfile
+        image: tytye/yolo-app:v1 
         container_name: yolo-app
         stdin_open: true
         command: npm run dev 
