@@ -31,9 +31,8 @@ The Dockerfile provided in this project employs multi-stage builds to optimize t
 
 - **Optimization**: By using multi-stage builds, unnecessary dependencies and development-related files are not included in the final production image, resulting in a smaller image size and improved security.
 - **Port Configuration**: Ensure that the ports exposed in the Dockerfile match the ports your application listens on and that they are appropriately configured in any networking setups.
-- **Environment Variables**: If your application requires environment variables to be set, ensure they are configured either in the Dockerfile or through runtime environment settings.
-- **Security Considerations**: Regularly update base images and dependencies to patch any security vulnerabilities. Additionally, follow best practices for Docker security, such as running containers with least privilege and implementing network segmentation.
-- **Documentation**: Maintain thorough documentation for the setup process, including instructions for building and running the Docker image, as well as any specific configuration steps required for deployment.
+- **Image versioning**: We can use date and time of build as away of keeping trak of image version
+
 
 By following this setup process and considering the additional details provided, you can effectively containerize your web application using Docker, making it more portable, scalable, and easier to manage across different environments.
 
