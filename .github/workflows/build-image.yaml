@@ -10,7 +10,7 @@ jobs:
         uses: actions/checkout@v4
       - name: build
         run: |
-          export IMAGE_TAG="$(date +'%Y%m%d%H%M%S')"
+          export IMAGE_TAG="v$(date +'%y.%m.%d.%H')"
           echo $IMAGE_TAG
           # docker build . -t tytye/yolo-app:$IMAGE_TAG
       - name: publish
