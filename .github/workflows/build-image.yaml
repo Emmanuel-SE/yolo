@@ -1,5 +1,6 @@
 name: Build and publish app image
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
 
 jobs:
   publish-image:
@@ -9,8 +10,9 @@ jobs:
         uses: actions/checkout@v4
       - name: build
         run: |
-          docker build . -t tytye/yolo-app:latest
+          IMAGE_TAG="tytye/yolo-app:$(date +'%Y%m%d%H%M%S')"
+          docker build . -t $IMAGE_TAG
       - name: publish
         run: |
           docker login -u tytye -p ${{secrets.DOCKER_HUB_TOKEN}}
-          docker push tytye/yolo-app:latest
+          docker push $IMAGE_TAG
