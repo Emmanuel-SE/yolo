@@ -6,17 +6,18 @@ on:
 jobs:
   publish-image:
     runs-on: ubuntu-latest
-    env:
-      IMAGE_TAG: "v$(date +'%y.%m.%d.%H')"
     steps:
       - name: checkout
         uses: actions/checkout@v4
       - name: build
         id: build
         run: |
-          echo $IMAGE_TAG
+          export IMAGE_TAG="v$(date +'%y.%m.%d.%H')"
+          echo "::set-output name=IMAGE_TAG::$IMAGE_TAG"
           docker build . -t tytye/yolo-app:$IMAGE_TAG
       - name: publish
+        env:
+          IMAGE_TAG: ${{ steps.build.outputs.IMAGE_TAG }}
         run: |
           echo $IMAGE_TAG
           docker login -u tytye -p ${{ secrets.DOCKER_HUB_TOKEN }}
