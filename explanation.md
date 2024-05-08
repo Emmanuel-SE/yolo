@@ -31,7 +31,8 @@ The Dockerfile provided in this project employs multi-stage builds to optimize t
 
 - **Optimization**: By using multi-stage builds, unnecessary dependencies and development-related files are not included in the final production image, resulting in a smaller image size and improved security.
 - **Port Configuration**: Ensure that the ports exposed in the Dockerfile match the ports your application listens on and that they are appropriately configured in any networking setups.
-- **Image versioning**: We can use date and time of build as away of keeping trak of image version
+- **Image versioning**: We can use date and time of build as away of keeping trak of image version here is the format
+*v<year><month><day><hour>*
 
 
 By following this setup process and considering the additional details provided, you can effectively containerize your web application using Docker, making it more portable, scalable, and easier to manage across different environments.
