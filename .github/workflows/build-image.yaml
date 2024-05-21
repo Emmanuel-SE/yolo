@@ -12,9 +12,7 @@ jobs:
       - name: build
         id: build
         run: |
-          export IMAGE_TAG="v$(date +'%y.%m.%d.%H')"
-          echo "::set-output name=IMAGE_TAG::$IMAGE_TAG"
-          docker build . -t tytye/yolo-app:$IMAGE_TAG
+          docker build . -t tytye/yolo-app:latest
       - name: publish
         env:
           IMAGE_TAG: ${{ steps.build.outputs.IMAGE_TAG }}
@@ -22,3 +20,25 @@ jobs:
           echo $IMAGE_TAG
           docker login -u tytye -p ${{ secrets.DOCKER_HUB_TOKEN }}
           docker push tytye/yolo-app:$IMAGE_TAG
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+
+      - name: Deploy application with Ansible
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: False
+        run: |
+          ansible-playbook -i inventory.ini playbook.yml

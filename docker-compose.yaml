@@ -2,7 +2,7 @@ version: "3.5"
 
 services:
   yolo.app:
-        image: tytye/yolo-app:v24.05.21.15
+        image: tytye/yolo-app:latest
         container_name: yolo-app
         stdin_open: true
         command: npm run dev 
