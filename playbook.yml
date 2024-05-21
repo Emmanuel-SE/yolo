@@ -9,16 +9,11 @@
 
     - name: Install necessary packages
       apt:
-        name: 
+        name:
           - docker.io
-          - docker-compose
+          - curl
+          - git
         state: present
-
-    - name: Start Docker service
-      systemd:
-        name: docker
-        state: started
-        enabled: yes
 
     - name: Add user to docker group
       user:
@@ -26,6 +21,34 @@
         groups: docker
         append: yes
 
+    - name: Start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Remove old Docker Compose version if it exists
+      file:
+        path: /usr/bin/docker-compose
+        state: absent
+
+    - name: Install Docker Compose v2 using the official script
+      shell: |
+        mkdir -p ~/.docker/cli-plugins/
+        curl -SL https://github.com/docker/compose/releases/download/v2.18.1/docker-compose-linux-$(uname -m) -o ~/.docker/cli-plugins/docker-compose
+        chmod +x ~/.docker/cli-plugins/docker-compose
+      args:
+        executable: /bin/bash
+
+    - name: Ensure Docker Compose is installed and accessible
+      command: docker compose version
+
+    - name: Delete the yolo-app directory
+      file:
+        path: /home/yolo
+        state: absent
+
+      
     - name: Clone the repository
       git:
         repo: 'https://github.com/Emmanuel-SE/yolo.git'
@@ -37,6 +60,6 @@
         dest: /home/yolo/docker-compose.yml
 
     - name: Run Docker Compose
-      command: docker-compose up -d
+      command: docker compose up -d
       args:
         chdir: /home/yolo
