@@ -12,7 +12,9 @@ jobs:
       - name: build
         id: build
         run: |
-          docker build . -t tytye/yolo-app:latest
+          export IMAGE_TAG="v$(date +'%y.%m.%d.%H')"
+          echo "::set-output name=IMAGE_TAG::$IMAGE_TAG"
+          docker build . -t tytye/yolo-app:$IMAGE_TAG
       - name: publish
         env:
           IMAGE_TAG: ${{ steps.build.outputs.IMAGE_TAG }}
