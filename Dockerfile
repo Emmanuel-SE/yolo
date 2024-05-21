@@ -34,15 +34,14 @@ COPY --from=backend /usr/src/app/backend ./backend
 EXPOSE 3000
 EXPOSE 5001
 
-WORKDIR /var/www/backend
+WORKDIR /var/www/client
+RUN npm install 
 
 
 # Set the working directory to /var/www/backend and install production dependencies
 WORKDIR /var/www/backend
 RUN npm install 
 
-# Ensure to install production dependencies (optional step, if different from dev dependencies)
-RUN npm install 
 
 # Run the application
 CMD [ "npm", "run", "dev"]
