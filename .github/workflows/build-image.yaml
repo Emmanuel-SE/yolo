@@ -1,4 +1,4 @@
-name: Build and publish app image
+name: Build, publish, and deploy app image
 
 on:
   workflow_dispatch:
@@ -7,27 +7,31 @@ jobs:
   publish-image:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: build
+
+      - name: Build Docker image
         id: build
         run: |
-          export IMAGE_TAG="v$(date +'%y.%m.%d.%H')"
-          echo "::set-output name=IMAGE_TAG::$IMAGE_TAG"
-          docker build . -t tytye/yolo-app:$IMAGE_TAG
-      - name: publish
+          IMAGE_TAG="v$(date +'%y.%m.%d.%H')"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          docker build . -t tytye/yolo-app:$IMAGE_TAG -t tytye/yolo-app:latest
+
+      - name: Publish Docker image
         env:
-          IMAGE_TAG: ${{ steps.build.outputs.IMAGE_TAG }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
         run: |
-          echo $IMAGE_TAG
+          echo "Publishing images with tags: $IMAGE_TAG and latest"
           docker login -u tytye -p ${{ secrets.DOCKER_HUB_TOKEN }}
           docker push tytye/yolo-app:$IMAGE_TAG
+          docker push tytye/yolo-app:latest
+
   deploy:
     runs-on: ubuntu-latest
-
+    needs: publish-image
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -39,8 +43,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ansible
 
+      - name: Prepare Ansible inventory
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+        run: |
+          echo "[yolo_server]" > inventory.ini
+          echo "${SERVER_IP} ansible_ssh_user=ubuntu ansible_ssh_private_key_file=/tmp/ssh_key" >> inventory.ini
+
       - name: Deploy application with Ansible
         env:
           ANSIBLE_HOST_KEY_CHECKING: False
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          ansible-playbook -i inventory.ini playbook.yml
+          echo "$SSH_PRIVATE_KEY" > /tmp/ssh_key
+          chmod 600 /tmp/ssh_key
+          ansible-playbook -i inventory playbook.yml --private-key=/tmp/ssh_key
+          rm -f /tmp/ssh_key
