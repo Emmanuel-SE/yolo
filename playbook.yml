@@ -1,0 +1,42 @@
+---
+- hosts: yolo_server
+  become: yes
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install necessary packages
+      apt:
+        name: 
+          - docker.io
+          - docker-compose
+        state: present
+
+    - name: Start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Clone the repository
+      git:
+        repo: 'https://github.com/Emmanuel-SE/yolo.git'
+        dest: /home/yolo
+
+    - name: Copy Docker Compose file
+      copy:
+        src: /home/yolo/docker-compose.yml
+        dest: /home/yolo/docker-compose.yml
+
+    - name: Run Docker Compose
+      command: docker-compose up -d
+      args:
+        chdir: /home/yolo
