@@ -14,6 +14,7 @@
           - curl
           - git
           - nodejs
+          - npm
           - make 
         state: present
 
