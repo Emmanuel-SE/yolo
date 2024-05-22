@@ -1,0 +1,15 @@
+packages:
+  - docker.io
+  - curl
+  - git
+  - nodejs
+  - npm
+  - make
+
+docker_compose_install_command: >
+  mkdir -p ~/.docker/cli-plugins/ &&
+  curl -SL https://github.com/docker/compose/releases/download/v2.18.1/docker-compose-linux-$(uname -m) -o ~/.docker/cli-plugins/docker-compose &&
+  chmod +x ~/.docker/cli-plugins/docker-compose
+
+yolo_repo: 'https://github.com/Emmanuel-SE/yolo.git'
+

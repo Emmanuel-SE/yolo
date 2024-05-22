@@ -1,6 +1,8 @@
 ---
 - hosts: yolo_server
   become: yes
+  vars_files:
+    - vars.yml
   tasks:
     - name: Update and upgrade apt packages
       apt:
@@ -9,13 +11,7 @@
 
     - name: Install necessary packages
       apt:
-        name:
-          - docker.io
-          - curl
-          - git
-          - nodejs
-          - npm
-          - make 
+        name: "{{ packages }}"
         state: present
 
     - name: Add user to docker group
@@ -36,10 +32,7 @@
         state: absent
 
     - name: Install Docker Compose v2 using the official script
-      shell: |
-        mkdir -p ~/.docker/cli-plugins/
-        curl -SL https://github.com/docker/compose/releases/download/v2.18.1/docker-compose-linux-$(uname -m) -o ~/.docker/cli-plugins/docker-compose
-        chmod +x ~/.docker/cli-plugins/docker-compose
+      shell: "{{ docker_compose_install_command }}"
       args:
         executable: /bin/bash
 
@@ -54,7 +47,7 @@
       
     - name: Clone the repository
       git:
-        repo: 'https://github.com/Emmanuel-SE/yolo.git'
+        repo: "{{ yolo_repo }}"
         dest: /home/yolo
 
     - name: Copy Docker Compose file
