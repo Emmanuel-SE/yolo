@@ -13,7 +13,7 @@
           - docker.io
           - curl
           - git
-          - node
+          - nodejs
           - make 
         state: present
 
