@@ -1,0 +1,30 @@
+{
+  "name": "yolo",
+  "version": "1.0.0",
+  "description": "start app",
+  "main": "none",
+"scripts": {
+    "client-install": "npm install --prefix client",
+    "backend-install": "npm install --prefix backend",
+    "install-all": "npm install && npm run client-install && npm run backend-install",
+    "start": "node server.js",
+    "server": "npm run server --prefix backend",
+    "client": "npm run  start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  
+},
+  "dependencies": {
+    "concurrently": "^5.2.0"
+
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Emmanuel-SE/yolo.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Emmanuel-SE/yolo/issues"
+  },
+  "homepage": "https://github.com/Emmanuel-SE/yolo#readme"
+}

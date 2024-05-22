@@ -1,4 +1,48 @@
-# Web Setup 
+# Web Setup
+
+## Terraform Configuration
+
+The Terraform configuration file (`main.tf`) is used to provision an AWS EC2 instance and set up necessary security groups and Docker installations. Here's a detailed description of the resources and configurations defined in the file:
+
+### Variables
+
+- **vpc_id**: ID of the VPC where the instance will be created.
+- **subnet_id**: ID of the subnet within the VPC.
+- **ssh_user**: SSH username for the EC2 instance.
+- **key_name**: Name of the SSH key pair.
+- **region**: AWS region for resource creation.
+
+### AWS Provider
+
+The AWS provider configuration specifies the AWS region where the resources will be created.
+
+### Security Group
+
+The security group (`yolo_sg`) is defined to allow inbound traffic on specific ports:
+
+- **22**: SSH access.
+- **80**: HTTP access.
+- **443**: HTTPS access.
+- **3000**: Application access.
+- **5001**: Application access.
+- **8081**: Application access for Mongo Express.
+- **ICMP**: For ping requests.
+
+### EC2 Instance
+
+The EC2 instance resource (`yolo_server`) is configured with the following properties:
+
+- **AMI**: Amazon Machine Image ID for Ubuntu.
+- **Instance Type**: Instance type (`t2.micro`).
+- **Key Name**: SSH key pair name.
+- **Security Groups**: Associated security group for network rules.
+- **Tags**: Tags to identify the instance.
+
+### Provisioners
+
+- **remote-exec**: Installs Docker and Docker Compose plugin, adds the `ubuntu` user to the Docker group, and starts the Docker service.
+- **file**: Copies the SSH private key to the instance
+
 
 This document outlines the setup process for a web application using Docker. The setup involves building a Docker image for the application based on a multi-stage Dockerfile, which incorporates separate stages for the backend and client components of the application.
 
@@ -7,6 +51,7 @@ This document outlines the setup process for a web application using Docker. The
 The Dockerfile provided in this project employs multi-stage builds to optimize the size of the final Docker image. It consists of the following stages:
 
 ### Backend Stage
+
 - **Base Image**: Utilizes the official Node.js Docker image tagged `18-alpine`.
 - **Work Directory**: Sets the working directory for the backend component of the application.
 - **Copy Files**: Copies the `package.json` and `package-lock.json` files into the container.
@@ -14,6 +59,7 @@ The Dockerfile provided in this project employs multi-stage builds to optimize t
 - **Copy Application Code**: Copies the backend application code into the container.
 
 ### Client Stage
+
 - **Base Image**: Utilizes the same Node.js Docker image tagged `18-alpine`.
 - **Work Directory**: Sets the working directory for the client component of the application.
 - **Copy Files**: Copies the `package.json` and `package-lock.json` files into the container.
@@ -21,6 +67,7 @@ The Dockerfile provided in this project employs multi-stage builds to optimize t
 - **Copy Application Code**: Copies the client application code into the container.
 
 ### Final Production Stage
+
 - **Base Image**: Uses the same Node.js Docker image tagged `18-alpine`.
 - **Work Directory**: Sets the working directory for the final production image.
 - **Copy Files from Previous Stages**: Copies the built client and backend code from their respective stages into the final production image.
@@ -32,11 +79,9 @@ The Dockerfile provided in this project employs multi-stage builds to optimize t
 - **Optimization**: By using multi-stage builds, unnecessary dependencies and development-related files are not included in the final production image, resulting in a smaller image size and improved security.
 - **Port Configuration**: Ensure that the ports exposed in the Dockerfile match the ports your application listens on and that they are appropriately configured in any networking setups.
 - **Image versioning**: We can use date and time of build as away of keeping trak of image version here is the format
-*vyear.month.day.hour*
-
+  *vyear.month.day.hour*
 
 By following this setup process and considering the additional details provided, you can effectively containerize your web application using Docker, making it more portable, scalable, and easier to manage across different environments.
-
 
 ## Database Setup
 
@@ -51,7 +96,7 @@ For the local development environment, we will:
 - **Volumes Creation**: Create two volumes specific to our database:
   - *mongo_data*: for storing the database data.
   - *mongo_config*: for storing database configurations.
-  We will use the local driver for volumes since we will be running them on the local server.
+    We will use the local driver for volumes since we will be running them on the local server.
 - **Network Creation**: Establish a Docker network named *mongo_net* to facilitate communication between the MongoDB database and MongoDB Express services. We will use the bridge driver, which is Docker's default driver, for the network.
 - **Database Initialization**: Configure the setup process to automatically create a database upon spinning up the services.
 

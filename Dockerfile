@@ -3,20 +3,12 @@ FROM node:18-alpine AS backend
 
 WORKDIR /usr/src/app/backend
 
-COPY ./backend/package*.json ./
-
-RUN npm install
-
 COPY ./backend .
 
 # Stage 2: Build client
 FROM node:18-alpine AS client
 
 WORKDIR /usr/src/app/client
-
-COPY ./client/package*.json ./
-
-RUN npm install
 
 COPY ./client .
 
@@ -34,13 +26,10 @@ COPY --from=backend /usr/src/app/backend ./backend
 EXPOSE 3000
 EXPOSE 5001
 
-WORKDIR /var/www/client
-RUN npm install 
-
+COPY ./package*.json  ./
 
 # Set the working directory to /var/www/backend and install production dependencies
-WORKDIR /var/www/backend
-RUN npm install 
+RUN npm run install-all
 
 
 # Run the application
