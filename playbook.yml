@@ -13,6 +13,7 @@
           - docker.io
           - curl
           - git
+          - node
         state: present
 
     - name: Add user to docker group
@@ -58,6 +59,17 @@
       copy:
         src: /home/yolo/docker-compose.yml
         dest: /home/yolo/docker-compose.yml
+
+
+    - name: install client
+      command: npm install
+      args:
+        chdir: /home/yolo/client
+
+    - name: install backend 
+      command: npm install
+      args:
+        chdir: /home/yolo/backend
 
     - name: Run Docker Compose
       command: docker compose up -d
