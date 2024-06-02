@@ -38,11 +38,11 @@ spec:
               key: REACT_APP_BACKEND_API_URL
         resources:
           limits:
-            cpu: "200m"
-            memory: "512Mi"
+            cpu: "750m" # 0.75 vCPUs
+            memory: "1500Mi" # 1.5 GB RAM
           requests:
-            cpu: "50m"
-            memory: "256Mi"
+            cpu: "500m" # Request 0.5 vCPUs
+            memory: "1000Mi" # Request 1 GB RAM
       volumes:
       - name: app-volume
         emptyDir: {}
