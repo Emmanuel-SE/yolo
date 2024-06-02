@@ -14,6 +14,8 @@ services:
           - "./backend:/var/www/backend"
         networks:
           - yolo_net
+        env_file:
+          - ./.env
 networks:
   yolo_net:
     driver: bridge
