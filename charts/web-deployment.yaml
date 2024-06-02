@@ -18,14 +18,21 @@ spec:
       labels:
         app: yolo-app
     spec:
+      initContainers:
+      - name: init-env
+        image: appropriate/curl # Use an image that has curl or wget installed
+        command: ["sh", "-c", "EXTERNAL_IP=$(curl -s http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip) && echo \"REACT_APP_BACKEND_API_URL=http://$EXTERNAL_IP/api\" > /usr/src/app/.env"]
+        volumeMounts:
+        - name: app-volume
+          mountPath: /usr/src/app/.env
       containers:
       - name: yolo-app
         image: tytye/yolo-app:latest
         ports:
         - containerPort: 3000
-        env:
-        - name: REACT_APP_BACKEND_API_URL
-          value: "http://$(BACKEND_IP)/api" 
+        envFrom:
+        - secretRef:
+            name: env-secret
         resources:
           limits:
             cpu: "750m" # 0.75 vCPUs
@@ -34,8 +41,5 @@ spec:
             cpu: "500m" # Request 0.5 vCPUs
             memory: "1000Mi" # Request 1 GB RAM
       volumes:
-      - name: backend-ip
-        downwardAPI:
-          items:
-          - fieldRef:
-              fieldPath: status.loadBalancer.ingress[0].ip
+      - name: app-volume
+        emptyDir: {}
