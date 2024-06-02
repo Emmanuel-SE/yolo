@@ -26,7 +26,7 @@ spec:
             - containerPort: 5001
           env:
             - name: REACT_APP_BACKEND_API_URL
-              value: "http://yolo-app-service:5001"
+              value: "http://localhost:5001"
           resources:
             limits:
               cpu: "200m"
