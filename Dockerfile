@@ -1,19 +1,19 @@
 # Stage 1: Build backend
-FROM node:18-alpine AS backend
+FROM node:13.14.0-alpine3.11 AS backend
 
 WORKDIR /usr/src/app/backend
 
 COPY ./backend .
 
 # Stage 2: Build client
-FROM node:18-alpine AS client
+FROM node:13.14.0-alpine3.11 AS client
 
 WORKDIR /usr/src/app/client
 
 COPY ./client .
 
 # Stage 3: Combine and serve
-FROM node:18-alpine AS prod
+FROM node:13.14.0-alpine3.11 AS prod
 
 # Set the working directory to /var/www
 WORKDIR /var/www
