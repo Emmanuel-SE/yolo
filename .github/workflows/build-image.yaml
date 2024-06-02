@@ -50,7 +50,6 @@ jobs:
       with:
         credentials_json: '${{ secrets.GKE_SA_KEY }}'
 
-
     # Get the GKE credentials so we can deploy to the cluster
     - name: Set up GKE credentials
       uses: google-github-actions/get-gke-credentials@v0
