@@ -3,12 +3,13 @@ kind: Deployment
 metadata:
   name: yolo-app
 spec:
-  replicas: 1
+  replicas: 3
+  minReadySeconds: 10  # Pod should be ready for at least 10 seconds before being considered available
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
-      maxSurge: 1
+      maxUnavailable: 1  # Ensures at least 2 pods are always available during updates
+      maxSurge: 1        # Allows one extra pod to be created during updates
   selector:
     matchLabels:
       app: yolo-app
@@ -22,11 +23,10 @@ spec:
           image: tytye/yolo-app:latest
           ports:
             - containerPort: 3000
-            - containerPort: 5001
           resources:
             limits:
-              cpu: "750m" # 0.75 vCPUs
-              memory: "1500Mi" # 1.5 GB RAM
+              cpu: "200m"
+              memory: "512Mi"
             requests:
-              cpu: "350m" # Request 0.5 vCPUs
-              memory: "500Mi" # Request 1 GB RAM
+              cpu: "50m"
+              memory: "256Mi"
