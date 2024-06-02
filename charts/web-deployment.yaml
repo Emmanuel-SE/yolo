@@ -4,7 +4,6 @@ metadata:
   name: yolo-app
 spec:
   replicas: 1
-  minReadySeconds: 10
   strategy:
     type: RollingUpdate
     rollingUpdate:
