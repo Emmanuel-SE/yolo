@@ -28,7 +28,7 @@ jobs:
         run: |
           IMAGE_TAG="v$(date +'%y.%m.%d.%H')"
           docker login -u tytye -p ${{ secrets.DOCKER_HUB_TOKEN }}
-          docker buildx build --platform linux/amd64,linux/arm64 -t tytye/yolo-app:$IMAGE_TAG -t tytye/yolo-app:latest . --push
+          docker buildx build  -t tytye/yolo-app:$IMAGE_TAG -t tytye/yolo-app:latest . --push
 
   deploy:
     name: Deploy
