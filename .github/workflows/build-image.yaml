@@ -2,7 +2,7 @@ name: Build and Deploy to GKE
 
 on:
   push:
-    branches: [ $default-branch ]
+    branches: [ k8-gke-deployment ]
 
 env:
   PROJECT_ID: ${{ secrets.GKE_PROJECT }}
