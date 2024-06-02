@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: yolo-app
 spec:
-  replicas: 3
+  replicas: 1
   minReadySeconds: 10
   strategy:
     type: RollingUpdate
@@ -26,8 +26,8 @@ spec:
             - containerPort: 5001
           resources:
             limits:
-              cpu: "200m"
-              memory: "512Mi"
+              cpu: "750m" # 0.75 vCPUs
+              memory: "1500Mi" # 1.5 GB RAM
             requests:
-              cpu: "50m"
-              memory: "256Mi"
+              cpu: "350m" # Request 0.5 vCPUs
+              memory: "500Mi" # Request 1 GB RAM
