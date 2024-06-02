@@ -4,12 +4,12 @@ metadata:
   name: yolo-app
 spec:
   replicas: 3
-  minReadySeconds: 10  # Pod should be ready for at least 10 seconds before being considered available
+  minReadySeconds: 10
   strategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1  # Ensures at least 2 pods are always available during updates
-      maxSurge: 1        # Allows one extra pod to be created during updates
+      maxUnavailable: 1
+      maxSurge: 1
   selector:
     matchLabels:
       app: yolo-app
@@ -18,19 +18,31 @@ spec:
       labels:
         app: yolo-app
     spec:
+      initContainers:
+      - name: init-env
+        image: appropriate/curl # Use an image that has curl or wget installed
+        command: ["sh", "-c", "EXTERNAL_IP=$(kubectl get svc yolo-app-service -o=jsonpath='{.status.loadBalancer.ingress[0].ip}') && echo \"REACT_APP_BACKEND_API_URL=http://$EXTERNAL_IP\" > /usr/src/app/.env"]
+        volumeMounts:
+        - name: app-volume
+          mountPath: /usr/src/app/.env
       containers:
-        - name: yolo-app
-          image: tytye/yolo-app:latest
-          ports:
-            - containerPort: 3000
-            - containerPort: 5001
-          env:
-            - name: REACT_APP_BACKEND_API_URL
-              value: "http://localhost:5001"
-          resources:
-            limits:
-              cpu: "200m"
-              memory: "512Mi"
-            requests:
-              cpu: "50m"
-              memory: "256Mi"
+      - name: yolo-app
+        image: tytye/yolo-app:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: REACT_APP_BACKEND_API_URL
+          valueFrom:
+            secretKeyRef:
+              name: env-secret
+              key: REACT_APP_BACKEND_API_URL
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "512Mi"
+          requests:
+            cpu: "50m"
+            memory: "256Mi"
+      volumes:
+      - name: app-volume
+        emptyDir: {}

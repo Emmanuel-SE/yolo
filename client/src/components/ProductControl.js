@@ -5,6 +5,8 @@ import NewProductForm from './NewProductForm';
 import ProductDetail from './ProductDetail';
 import AddProduct from './AddProduct';
 import EditProductForm from './EditProductForm';
+const BACKEND_API_URL = process.env.REACT_APP_BACKEND_API_URL || 'http://localhost:5001';
+
 // import tshirt from '../images/products/tshirt.png';
 // import backpack from '../images/products/backpack.png';
 // import pants from '../images/products/pants.png';
@@ -78,7 +80,7 @@ class ProductControl extends Component {
     }
     
     componentDidMount(){
-        axios.get('http://localhost:5001/api/products')
+        axios.get(`${BACKEND_API_URL}/api/products`,)
             .then(res =>{
                 console.log(res)
                 this.setState({
@@ -157,14 +159,14 @@ class ProductControl extends Component {
         //     console.log(pair[0]+ ', ' + pair[1]); 
         // }       
         // console.log(...formData)
-        axios.post('http://localhost:5001/api/products', newProduct)
+        axios.post(`${BACKEND_API_URL}/api/products`, newProduct)
             .then(res => console.log(res.data))
         this.setState({
             formVisibleOnPage: false
         })
     };
     handleDeletingProduct = (id) =>{
-        axios.delete('http://localhost:5001/api/products/'+id)
+        axios.delete(`${BACKEND_API_URL}/api/products` +id)
             .then(res => console.log(res.data))
             .catch((error) =>{
                 console.log(error)
@@ -184,7 +186,7 @@ class ProductControl extends Component {
     }
     handleEditingProduct = (editedProduct) =>{
 
-        axios.put('http://localhost:5001/api/products/' + this.state.selectedProduct._id, editedProduct)
+        axios.put(`${BACKEND_API_URL}/api/products` + this.state.selectedProduct._id, editedProduct)
             .then(res =>console.log(res.data))
         
         this.setState({
