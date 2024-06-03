@@ -25,7 +25,7 @@ spec:
             - containerPort: 3000
           env:
             - name: mongoURI
-              value: "mongodb://adminuser:password123@mongo-nodeport-svc:27017"
+              value: "mongodb://adminuser:password123@mongo:27017"
           resources:
             limits:
               cpu: "200m"
