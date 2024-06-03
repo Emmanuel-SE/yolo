@@ -1,8 +1,6 @@
 # YOLO App
 
-## Demo Link
-
-You can access the demo of the application at the following link: [Demo Link](http://34.171.161.116/)## Overview
+## [Demo Link](http://34.171.161.116/)
 
 The YOLO App is a simple web application that allows users to add and manage products. The application includes both backend and frontend components, which are containerized using Docker.
 
