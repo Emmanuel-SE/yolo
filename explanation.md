@@ -12,7 +12,6 @@ The deployment configuration for `yolo-app` is defined in a YAML file which spec
 - **kind**: `Deployment` - Specifies that the resource type is a deployment.
 - **metadata**:
   - **name**: `yolo-app` - The name of the deployment.
-
 - **spec**:
   - **replicas**: `3` - Specifies that three instances of the application should be running.
   - **minReadySeconds**: `10` - Ensures that a pod must be ready for at least 10 seconds before it is considered available.
@@ -24,7 +23,6 @@ The deployment configuration for `yolo-app` is defined in a YAML file which spec
   - **selector**:
     - **matchLabels**:
       - **app**: `yolo-app` - Selector that determines which pods belong to the deployment.
-
 - **template**:
   - **metadata**:
     - **labels**:
@@ -46,33 +44,28 @@ The deployment configuration for `yolo-app` is defined in a YAML file which spec
           - **cpu**: `"50m"` - Amount of CPU the container requests.
           - **memory**: `"256Mi"` - Amount of memory the container requests.
 
-### MongoDB Kubernetes Deployment Configuration
+### MongoDB Kubernetes Deployment Configuration using StatefulSets
 
-This section provides a detailed explanation of the MongoDB deployment configuration as defined in the `charts/mongodb-deployment.yaml` file.
+The MongoDB deployment configuration has been updated to use StatefulSets for a more stable and ordered deployment of MongoDB instances within the Kubernetes cluster.
 
-### Deployment Configuration Overview
+### Key Elements of the StatefulSet Configuration
 
-The MongoDB deployment is managed through a YAML configuration file which specifies how the MongoDB service should be deployed and managed within the Kubernetes cluster.
-
-### Key Elements of the MongoDB Deployment Configuration
-
-- **apiVersion**: `apps/v1` - Indicates the version of the Kubernetes API that the deployment is using.
-- **kind**: `Deployment` - Specifies that the resource type is a deployment.
+- **apiVersion**: `apps/v1` - Indicates the version of the Kubernetes API that the StatefulSet is using.
+- **kind**: `StatefulSet` - Specifies that the resource type is a StatefulSet.
 - **metadata**:
   - **labels**:
-    - **app**: `mongo` - Labels used to identify the deployment.
-  - **name**: `mongo` - The name of the deployment.
-
+    - **app**: `mongo` - Labels used to identify the StatefulSet.
+  - **name**: `mongo` - The name of the StatefulSet.
 - **spec**:
+  - **serviceName**: `mongo` - The headless service used to control the network domain for the StatefulSet.
   - **replicas**: `1` - Specifies that one instance of MongoDB should be running.
   - **selector**:
     - **matchLabels**:
-      - **app**: `mongo` - Selector that determines which pods belong to the deployment.
-  - **strategy**: `{}` - An empty strategy indicates default rolling update strategy.
+      - **app**: `mongo` - Selector that determines which pods belong to the StatefulSet.
   - **template**:
     - **metadata**:
       - **labels**:
-        - **app**: `mongo` - Labels applied to all pods in the deployment.
+        - **app**: `mongo` - Labels applied to all pods in the StatefulSet.
     - **spec**:
       - **containers**:
         - **name**: `mongo` - Name of the container within the pod.
@@ -87,9 +80,7 @@ The MongoDB deployment is managed through a YAML configuration file which specif
           - **successThreshold**: `1` - Minimum consecutive successes for the probe to be considered successful after having failed.
           - **failureThreshold**: `6` - When the probe should give up, after failing consecutively.
         - **env**:
-          - Environment variables for MongoDB credentials, sourced from Kubernetes secrets:
-            - **MONGO_INITDB_ROOT_USERNAME**
-            - **MONGO_INITDB_ROOT_PASSWORD**
+          - Environment variables for MongoDB credentials, sourced from Kubernetes secrets.
         - **volumeMounts**:
           - **name**: `mongo-data-dir`
           - **mountPath**: `/data/db` - The path where the MongoDB data directory is mounted inside the container.
@@ -109,10 +100,11 @@ The Git workflow automates the build and deployment process of your application 
 ### Deployment Process
 
 1. **Build Docker Image**:
+
    - The `publish-image` job builds a Docker image tagged with version information and pushes it to a Docker registry (e.g., Docker Hub).
    - It uses Docker Buildx to build the image for multiple platforms (linux/amd64, linux/arm64) to ensure compatibility.
-
 2. **Deploy to GKE**:
+
    - The `deploy` job deploys the Docker image to the GKE cluster.
    - It sets up GKE credentials using Google-GitHub Actions and authenticates with the GKE cluster.
    - The deployment step applies the Kubernetes manifests located in the `charts/` folder to deploy the application.
