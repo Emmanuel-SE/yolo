@@ -1,107 +1,130 @@
-# Web Setup
+## Detailed Kubernetes Deployment Configuration
 
-## Terraform Configuration
+This section provides a detailed explanation of the Kubernetes deployment configuration for the `yolo-app` as defined in the `charts/web-deployment.yaml` file.
 
-The Terraform configuration file (`main.tf`) is used to provision an AWS EC2 instance and set up necessary security groups and Docker installations. Here's a detailed description of the resources and configurations defined in the file:
+### Deployment Configuration Overview
 
-### Variables
+The deployment configuration for `yolo-app` is defined in a YAML file which specifies how the application should be deployed and managed within the Kubernetes cluster.
 
-- **vpc_id**: ID of the VPC where the instance will be created.
-- **subnet_id**: ID of the subnet within the VPC.
-- **ssh_user**: SSH username for the EC2 instance.
-- **key_name**: Name of the SSH key pair.
-- **region**: AWS region for resource creation.
+### Key Elements of the Deployment Configuration
 
-### AWS Provider
+- **apiVersion**: `apps/v1` - Indicates the version of the Kubernetes API that the deployment is using.
+- **kind**: `Deployment` - Specifies that the resource type is a deployment.
+- **metadata**:
+  - **name**: `yolo-app` - The name of the deployment.
 
-The AWS provider configuration specifies the AWS region where the resources will be created.
+- **spec**:
+  - **replicas**: `3` - Specifies that three instances of the application should be running.
+  - **minReadySeconds**: `10` - Ensures that a pod must be ready for at least 10 seconds before it is considered available.
+  - **strategy**:
+    - **type**: `RollingUpdate` - The deployment updates pods in a rolling update fashion.
+    - **rollingUpdate**:
+      - **maxUnavailable**: `1` - Only one pod can be unavailable during the update process.
+      - **maxSurge**: `1` - Allows one extra pod to be created above the desired number of pods during an update.
+  - **selector**:
+    - **matchLabels**:
+      - **app**: `yolo-app` - Selector that determines which pods belong to the deployment.
 
-### Security Group
+- **template**:
+  - **metadata**:
+    - **labels**:
+      - **app**: `yolo-app` - Labels applied to all pods in the deployment.
+  - **spec**:
+    - **containers**:
+      - **name**: `yolo-app` - Name of the container within the pod.
+      - **image**: `tytye/yolo-app:latest` - The Docker image to use for the container.
+      - **ports**:
+        - **containerPort**: `3000` - The port that the container exposes.
+      - **env**:
+        - **name**: `mongoURI`
+        - **value**: `"mongodb://adminuser:password123@mongo-nodeport-svc:27017"` - Environment variable for the MongoDB URI.
+      - **resources**:
+        - **limits**:
+          - **cpu**: `"200m"` - Maximum amount of CPU the container can use.
+          - **memory**: `"512Mi"` - Maximum amount of memory the container can use.
+        - **requests**:
+          - **cpu**: `"50m"` - Amount of CPU the container requests.
+          - **memory**: `"256Mi"` - Amount of memory the container requests.
 
-The security group (`yolo_sg`) is defined to allow inbound traffic on specific ports:
+### MongoDB Kubernetes Deployment Configuration
 
-- **22**: SSH access.
-- **80**: HTTP access.
-- **443**: HTTPS access.
-- **3000**: Application access.
-- **5001**: Application access.
-- **8081**: Application access for Mongo Express.
-- **ICMP**: For ping requests.
+This section provides a detailed explanation of the MongoDB deployment configuration as defined in the `charts/mongodb-deployment.yaml` file.
 
-### EC2 Instance
+### Deployment Configuration Overview
 
-The EC2 instance resource (`yolo_server`) is configured with the following properties:
+The MongoDB deployment is managed through a YAML configuration file which specifies how the MongoDB service should be deployed and managed within the Kubernetes cluster.
 
-- **AMI**: Amazon Machine Image ID for Ubuntu.
-- **Instance Type**: Instance type (`t2.micro`).
-- **Key Name**: SSH key pair name.
-- **Security Groups**: Associated security group for network rules.
-- **Tags**: Tags to identify the instance.
+### Key Elements of the MongoDB Deployment Configuration
 
-### Provisioners
+- **apiVersion**: `apps/v1` - Indicates the version of the Kubernetes API that the deployment is using.
+- **kind**: `Deployment` - Specifies that the resource type is a deployment.
+- **metadata**:
+  - **labels**:
+    - **app**: `mongo` - Labels used to identify the deployment.
+  - **name**: `mongo` - The name of the deployment.
 
-- **remote-exec**: Installs Docker and Docker Compose plugin, adds the `ubuntu` user to the Docker group, and starts the Docker service.
-- **file**: Copies the SSH private key to the instance
+- **spec**:
+  - **replicas**: `1` - Specifies that one instance of MongoDB should be running.
+  - **selector**:
+    - **matchLabels**:
+      - **app**: `mongo` - Selector that determines which pods belong to the deployment.
+  - **strategy**: `{}` - An empty strategy indicates default rolling update strategy.
+  - **template**:
+    - **metadata**:
+      - **labels**:
+        - **app**: `mongo` - Labels applied to all pods in the deployment.
+    - **spec**:
+      - **containers**:
+        - **name**: `mongo` - Name of the container within the pod.
+        - **image**: `mongo` - The Docker image to use for the container.
+        - **args**: `["--dbpath","/data/db"]` - Arguments passed to the MongoDB container to specify the database path.
+        - **livenessProbe** and **readinessProbe**:
+          - **exec**:
+            - **command**: `["mongosh", "--eval", "db.adminCommand('ping')"]` - Commands used to check the health of the MongoDB instance.
+          - **initialDelaySeconds**: `30` - Delay before the probe is initiated.
+          - **periodSeconds**: `10` - How often to perform the probe.
+          - **timeoutSeconds**: `5` - When the probe times out.
+          - **successThreshold**: `1` - Minimum consecutive successes for the probe to be considered successful after having failed.
+          - **failureThreshold**: `6` - When the probe should give up, after failing consecutively.
+        - **env**:
+          - Environment variables for MongoDB credentials, sourced from Kubernetes secrets:
+            - **MONGO_INITDB_ROOT_USERNAME**
+            - **MONGO_INITDB_ROOT_PASSWORD**
+        - **volumeMounts**:
+          - **name**: `mongo-data-dir`
+          - **mountPath**: `/data/db` - The path where the MongoDB data directory is mounted inside the container.
+      - **volumes**:
+        - **name**: `mongo-data-dir`
+        - **persistentVolumeClaim**:
+          - **claimName**: `mongo-data` - The name of the persistent volume claim that provides storage for MongoDB data.
 
+### Using Git Workflow to Deploy Application to GKE
 
-This document outlines the setup process for a web application using Docker. The setup involves building a Docker image for the application based on a multi-stage Dockerfile, which incorporates separate stages for the backend and client components of the application.
+This section outlines how the Git workflow defined in the `build-image.yaml` file can be utilized to deploy your application to Google Kubernetes Engine (GKE).
 
-## Dockerfile Overview
+### Workflow Overview
 
-The Dockerfile provided in this project employs multi-stage builds to optimize the size of the final Docker image. It consists of the following stages:
+The Git workflow automates the build and deployment process of your application to the GKE cluster. It consists of two main jobs: `publish-image` for building the Docker image and `deploy` for deploying the image to the GKE cluster.
 
-### Backend Stage
+### Deployment Process
 
-- **Base Image**: Utilizes the official Node.js Docker image tagged `18-alpine`.
-- **Work Directory**: Sets the working directory for the backend component of the application.
-- **Copy Files**: Copies the `package.json` and `package-lock.json` files into the container.
-- **Dependency Installation**: Installs production dependencies using npm.
-- **Copy Application Code**: Copies the backend application code into the container.
+1. **Build Docker Image**:
+   - The `publish-image` job builds a Docker image tagged with version information and pushes it to a Docker registry (e.g., Docker Hub).
+   - It uses Docker Buildx to build the image for multiple platforms (linux/amd64, linux/arm64) to ensure compatibility.
 
-### Client Stage
+2. **Deploy to GKE**:
+   - The `deploy` job deploys the Docker image to the GKE cluster.
+   - It sets up GKE credentials using Google-GitHub Actions and authenticates with the GKE cluster.
+   - The deployment step applies the Kubernetes manifests located in the `charts/` folder to deploy the application.
+   - It then checks the status of the deployment and retrieves information about the services running in the cluster.
 
-- **Base Image**: Utilizes the same Node.js Docker image tagged `18-alpine`.
-- **Work Directory**: Sets the working directory for the client component of the application.
-- **Copy Files**: Copies the `package.json` and `package-lock.json` files into the container.
-- **Dependency Installation**: Installs production dependencies using npm.
-- **Copy Application Code**: Copies the client application code into the container.
+### Git Workflow Benefits
 
-### Final Production Stage
+- **Automation**: The workflow automates the build and deployment process, reducing manual intervention.
+- **Consistency**: Ensures consistent deployment of the application to the GKE cluster.
+- **Scalability**: Supports deploying the application to multiple platforms using Docker Buildx.
+- **Visibility**: Provides visibility into the deployment process and status of services in the GKE cluster.
 
-- **Base Image**: Uses the same Node.js Docker image tagged `18-alpine`.
-- **Work Directory**: Sets the working directory for the final production image.
-- **Copy Files from Previous Stages**: Copies the built client and backend code from their respective stages into the final production image.
-- **Expose Ports**: Exposes ports 3000 for client ui acccess and 5001 for backend access from client requests.
-- **Command**: Specifies the command to run when the container starts, which in this case is `npm dev` on the root of the backend folder
+### Conclusion
 
-## Additional Details
-
-- **Optimization**: By using multi-stage builds, unnecessary dependencies and development-related files are not included in the final production image, resulting in a smaller image size and improved security.
-- **Port Configuration**: Ensure that the ports exposed in the Dockerfile match the ports your application listens on and that they are appropriately configured in any networking setups.
-- **Image versioning**: We can use date and time of build as away of keeping trak of image version here is the format
-  *vyear.month.day.hour*
-
-By following this setup process and considering the additional details provided, you can effectively containerize your web application using Docker, making it more portable, scalable, and easier to manage across different environments.
-
-## Database Setup
-
-For the database setup, we will configure both a local development environment and a production environment using MongoDB.
-
-### Local Development Setup
-
-For the local development environment, we will:
-
-- **Use Official MongoDB Image**: Pull the latest official MongoDB image from Docker Hub to set up the database.
-- **Mongo Express for GUI**: Utilize MongoDB Express as a GUI tool to enable users to visualize and interact with the database. We will also use the official MongoDB Express image from Docker Hub.
-- **Volumes Creation**: Create two volumes specific to our database:
-  - *mongo_data*: for storing the database data.
-  - *mongo_config*: for storing database configurations.
-    We will use the local driver for volumes since we will be running them on the local server.
-- **Network Creation**: Establish a Docker network named *mongo_net* to facilitate communication between the MongoDB database and MongoDB Express services. We will use the bridge driver, which is Docker's default driver, for the network.
-- **Database Initialization**: Configure the setup process to automatically create a database upon spinning up the services.
-
-### Production Environment
-
-In production, the application will utilize a remote database provided by MongoDB. This remote database will handle the storage and management of production data, ensuring scalability, reliability, and ease of maintenance.
-
-By following this database setup process, we can seamlessly manage both local development and production environments, providing a robust foundation for our application's data management needs.
+By leveraging the Git workflow defined in the `build-image.yaml` file, you can streamline the deployment of your application to GKE, ensuring a smooth and efficient deployment process.

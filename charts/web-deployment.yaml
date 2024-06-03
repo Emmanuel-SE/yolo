@@ -23,6 +23,9 @@ spec:
           image: tytye/yolo-app:latest
           ports:
             - containerPort: 3000
+          env:
+            - name: mongoURI
+              value: "mongodb://adminuser:password123@mongo-nodeport-svc:27017"
           resources:
             limits:
               cpu: "200m"
